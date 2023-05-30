@@ -2,7 +2,7 @@
     "vsmqtt.brokerProfiles": [
         {
             "name": "Daniel",
-            "host": "broker.emqx.io",
+            "host": "18.231.186.76",
             "port": 1883,
             "clientId": "vsmqtt_client_cbe4"
         }

@@ -6,8 +6,6 @@ import 'package:mqtt_client/mqtt_server_client.dart';
 import 'dart:io';
 import 'package:mqtt_client/mqtt_client.dart' as mqtt;
 
-
-
 void main() {
   runApp(const MyApp());
 }
@@ -37,15 +35,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final client = MqttServerClient('broker.emqx.io', 'meu_aplicativo_flutter');
+  
+  final client = MqttServerClient('18.231.186.76', 'meu_aplicativo_flutter');
   bool light= false;
   double luminosidade = 0;
   double temperatura = 0;
-
-  String broker = 'broker.emqx.io';
-  int port = 1883;
-  String clientIdentifier = 'daniel_mobile';
-  String topic = 'temperatura_ambiente'; // TROQUE AQUI PARA UM TOPIC EXCLUSIVO SEU
   late MqttClientConnectionStatus? connectionStatus;
    StreamSubscription? subscription;
   
@@ -66,8 +60,10 @@ void connectToMqtt() async {
   client.onConnected = () {
     print('Conectado ao broker MQTT');
     // Inscreva-se nos tópicos desejados
-    client.subscribe('temperatura_ambiente', MqttQos.exactlyOnce);
+    client.subscribe('tads/temperatura', MqttQos.exactlyOnce);
+     client.subscribe('tads/luz', MqttQos.exactlyOnce);
   };
+ 
 
   client.onDisconnected = () {
     print('Desconectado do broker MQTT');
@@ -94,11 +90,12 @@ void connectToMqtt() async {
         final String topic = message.topic;
         final String messageText = MqttPublishPayload.bytesToStringAsString(payload.payload.message);
 
-        print('Mensagem recebida: Tópico: $topic, Mensagem: $messageText');
-        // Faça o processamento adicional necessário com a mensagem recebida
-        
-        setState(()=>{temperatura = double.parse(messageText)});
-        
+        if(topic == 'tads/luz' ){
+          setState(()=>{luminosidade = double.parse(messageText)});
+        }if(topic == 'tads/temperatura'){
+           setState(()=>{temperatura = double.parse(messageText)});
+        }
+       
       });
     });
 
@@ -168,11 +165,13 @@ void connectToMqtt() async {
             value: light,
             activeColor: Colors.green,
             onChanged: (bool value) {
+              
               setState(() {
                 light = value;
+                int l = value?1:0;
               final builder = MqttClientPayloadBuilder();
-              builder.addString(light.toString());
-              client.publishMessage('Lampada_status', MqttQos.exactlyOnce, builder.payload!);
+              builder.addString(l.toString());
+              client.publishMessage('tads/botao', MqttQos.exactlyOnce, builder.payload!);
               print(light);
   });
               
